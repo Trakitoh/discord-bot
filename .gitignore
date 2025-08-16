@@ -1,0 +1,14 @@
+.vscode/
+.vs/
+packages/
+*.nupkg
+bin/
+obj/
+*.pdb
+*.suo
+*.user
+*.sln
+
+appsettings.json
+
+

@@ -12,6 +12,7 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        // Sets up bot token loading from appsettings.json
         var builder = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
         IConfigurationRoot configuration = builder.Build();
 

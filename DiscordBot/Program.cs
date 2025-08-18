@@ -1,57 +1,30 @@
 ﻿using System.ComponentModel;
+using System.Reflection;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
-using NetCord;
-using NetCord.Gateway;
-using NetCord.Logging;
-using NetCord.Rest;
-using NetCord.Services;
-using NetCord.Services.ApplicationCommands;
 
 namespace DiscordBot;
 
 class Program
 {
+    private static DiscordSocketClient _client;
+    private static InteractionService _handler;
+
     static async Task Main(string[] args)
     {
+        var token = GetConfigValue("BOT_TOKEN");
 
-        string botToken = GetConfigValue("Discord:Token");
-        GatewayClient client = new(new BotToken(botToken), new GatewayClientConfiguration
-        {
-            Intents = default,
-            Logger = new ConsoleLogger(),
-        });
+        _client = new DiscordSocketClient();
+        _handler = new InteractionService(_client);
+        _client.Log += Log;
+        _client.Ready += RegisterCommands;
+        _client.InteractionCreated += HandleInteractions;
+        await _client.LoginAsync(TokenType.Bot, token);
+        await _client.StartAsync();
 
-        ApplicationCommandService<ApplicationCommandContext> aCS = new();
-        // aCS.AddSlashCommand("ping", "Ping!", () => "Pong!");
-        aCS.AddModules(typeof(Program).Assembly);
-
-        client.InteractionCreate += async interaction =>
-        {
-            // Check if the interaction is an application command interaction
-            if (interaction is not ApplicationCommandInteraction applicationCommandInteraction)
-                return;
-
-            // Execute the command
-            var result = await aCS.ExecuteAsync(new ApplicationCommandContext(applicationCommandInteraction, client));
-
-            // Check if the execution failed
-            if (result is not IFailResult failResult)
-                return;
-
-            // Return the error message to the user if the execution failed
-            try
-            {
-                await interaction.SendResponseAsync(InteractionCallback.Message(failResult.Message));
-            }
-            catch
-            {
-            }
-        };
-
-        // Register the commands so that you can use them in the Discord client
-        await aCS.RegisterCommandsAsync(client.Rest, client.Id);
-        await client.StartAsync();
-        await Task.Delay(-1);
+        await Task.Delay(-1); // Blocks task until the program is closed.
     }
 
     // TODO: Extract to separate file (?)
@@ -62,26 +35,23 @@ class Program
         return configuration[key] ?? throw new ArgumentException("Config value not found or failed to load", key);
     }
 
-    // static async Task<InteractionCallbackResponse?> HandleInteractions (Interaction interaction)
-    // {
-    //                 // Check if the interaction is an application command interaction
-    //         if (interaction is not ApplicationCommandInteraction applicationCommandInteraction)
-    //             return null;
+    // TODO: read up on https://docs.discordnet.dev/guides/concepts/logging.html
+    private static Task Log(LogMessage msg)
+    {
+        Console.WriteLine(msg.ToString());
+        return Task.CompletedTask;
+    }
 
-    //         // Execute the command
-    //         var result = await aCS.ExecuteAsync(new ApplicationCommandContext(applicationCommandInteraction, client));
+    private static async Task RegisterCommands()
+    {
+        await _handler.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+        Console.WriteLine("Commands registered successfully!");
+        await _handler.RegisterCommandsGloballyAsync();
+    }
 
-    //         // Check if the execution failed
-    //         if (result is not IFailResult failResult)
-    //             return;
-
-    //         // Return the error message to the user if the execution failed
-    //         try
-    //         {
-    //             await interaction.SendResponseAsync(InteractionCallback.Message(failResult.Message));
-    //         }
-    //         catch
-    //         {
-    //         }
-    // }
+    private static async Task HandleInteractions(SocketInteraction interaction)
+    {
+        var context = new SocketInteractionContext(_client, interaction);
+        await _handler.ExecuteCommandAsync(context, null);
+    }
 }

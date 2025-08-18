@@ -1,14 +1,10 @@
-using NetCord.Services.ApplicationCommands;
+
+using Discord.Interactions;
 
 namespace DiscordBot.SlashCommands;
 
-public class SimpleCommands : ApplicationCommandModule<ApplicationCommandContext>
+public class SimpleCommands : InteractionModuleBase<SocketInteractionContext>
 {
-    public async Task Ping()
-    {
-        await Context.Channel.SendMessageAsync("Pong!");
-    }
-    
-    [SlashCommand("pong", "Pong!")]
-    public static string Pong() => "Ping!";
+    [SlashCommand("ping", "Pings the bot, so we know its alive")]
+    public async Task Ping() => await RespondAsync(text: "pong!");
 }

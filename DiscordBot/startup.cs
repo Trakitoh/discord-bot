@@ -9,6 +9,7 @@ namespace DiscordBot
 {
     public class Startup
     {
+        // Puts startup configuration in a new file for cleanliness
         public static string GetConfigValue(string key)
         {
             var builder = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile(

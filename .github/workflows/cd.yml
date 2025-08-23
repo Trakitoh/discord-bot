@@ -1,0 +1,19 @@
+name: DSU DO Droplet Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+
+jobs:
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello World! 😜"
+
+
+            
+    

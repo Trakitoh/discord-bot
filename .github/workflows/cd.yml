@@ -32,7 +32,7 @@ jobs:
             git clone https://github.com/Trakitoh/discord-bot.git
             cd discord-bot/DiscordBot
             touch appsettings.json
-            echo "$BOT_TOKEN" >> .appsettings.json
+            echo "$BOT_TOKEN" >> appsettings.json
             dotnet run
             echo 'Deployment successful'
     

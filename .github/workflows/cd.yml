@@ -1,4 +1,4 @@
-name: DSU DO Droplet Pipeline
+name: DigitalOcean Droplet Deploy - Discord bot 
 
 on:
   push:
@@ -15,5 +15,24 @@ jobs:
       - run: echo "Hello World! 😜"
 
 
-            
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH Remote Commands
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          envs: BOT_TOKEN
+          script: |
+            rm -rf discord-bot
+            git clone https://github.com/Trakitoh/discord-bot.git
+            cd discord-bot/DiscordBot
+            touch appsettings.json
+            echo "$BOT_TOKEN" >> .appsettings.json
+            dotnet run
+            echo 'Deployment successful'
     

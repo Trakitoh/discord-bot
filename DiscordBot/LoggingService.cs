@@ -18,6 +18,8 @@ namespace DiscordBot
         private static readonly string LogFilePath = Path.Combine(LogDirectory, "logs.txt");
         private static readonly object _lock = new object();
 
+        public static readonly DateTime StartTime = DateTime.Now;
+
         public LoggingService(DiscordSocketClient client, CommandService? command = null)
         {
             // Adding Log Entries to the client's logs
